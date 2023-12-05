@@ -3,19 +3,19 @@ package terminal
 import (
 	"bufio"
 	"fmt"
-	"kurs_scheduler/internal/commands"
+	"kurs_scheduler/internal/command"
 	"os"
 	"strings"
 )
 
 type AppTerminal struct {
-	OutputChannel chan<- *commands.CommandArgs
+	OutputChannel chan<- *command.Args
 	InputChannel  <-chan struct{}
 }
 
 func NewTerminal(
 	inputChannel <-chan struct{},
-	outputChannel chan<- *commands.CommandArgs) *AppTerminal {
+	outputChannel chan<- *command.Args) *AppTerminal {
 	return &AppTerminal{
 		OutputChannel: outputChannel,
 		InputChannel:  inputChannel,
@@ -28,7 +28,7 @@ func (t *AppTerminal) Run() {
 		if len(line) < 0 {
 			continue
 		}
-		t.OutputChannel <- commands.NewCommandArgs(line[0], line[1:])
+		t.OutputChannel <- command.NewCommandArgs(line[0], line[1:])
 		<-t.InputChannel
 	}
 }
