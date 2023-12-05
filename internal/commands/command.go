@@ -1,5 +1,12 @@
 package commands
 
+type Status uint8
+
+const (
+	ErrorCmd Status = iota
+	SuccessCmd
+)
+
 type Command interface {
 	Execute(args []string)
 }

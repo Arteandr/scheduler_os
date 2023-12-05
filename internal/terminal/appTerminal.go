@@ -10,20 +10,26 @@ import (
 
 type AppTerminal struct {
 	OutputChannel chan<- *commands.CommandArgs
+	InputChannel  <-chan struct{}
 }
 
-func NewTerminal(outputChannel chan<- *commands.CommandArgs) *AppTerminal {
+func NewTerminal(
+	inputChannel <-chan struct{},
+	outputChannel chan<- *commands.CommandArgs) *AppTerminal {
 	return &AppTerminal{
 		OutputChannel: outputChannel,
+		InputChannel:  inputChannel,
 	}
 }
 
 func (t *AppTerminal) Run() {
 	for {
 		line := strings.Split(t.GetLine(), " ")
-		if len(line) > 0 {
-			t.OutputChannel <- commands.NewCommandArgs(line[0], line[1:])
+		if len(line) < 0 {
+			continue
 		}
+		t.OutputChannel <- commands.NewCommandArgs(line[0], line[1:])
+		<-t.InputChannel
 	}
 }
 
@@ -36,5 +42,5 @@ func (t *AppTerminal) GetLine() string {
 		return ""
 	}
 
-	return text
+	return strings.TrimSpace(text)
 }

@@ -9,13 +9,19 @@ import (
 func main() {
 	// Канал для чтения cmd с терминала
 	cmd := make(chan *commands.CommandArgs)
-	term := terminal.NewTerminal(cmd)
+	// Канал для ожидания выполнения CMD
+	wait := make(chan struct{})
+	term := terminal.NewTerminal(wait, cmd)
 	go term.Run()
+
+	cmdExecutor := commands.NewCommandExecutor()
 
 	for {
 		select {
-		case args := <-cmd:
-			fmt.Println(args)
+		case cmd := <-cmd:
+			status := cmdExecutor.ExecuteCMD(cmd)
+			fmt.Println("Статус выполнения CMD: ", status)
+			wait <- struct{}{}
 			break
 		}
 	}
