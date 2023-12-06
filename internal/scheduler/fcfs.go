@@ -16,13 +16,14 @@ func NewFCRSQueue() *FCFSQueue {
 	}
 }
 
-func (q *FCFSQueue) Run(onTickCallback OnTickCallback) {
+func (q *FCFSQueue) Run(onTickCallback OnTickCallback, enqueueToNextCallback EnqueueToNextCallback) {
 	for q.Size() > 0 {
 		proc, err := q.queue.Dequeue()
 		if err != nil {
 			fmt.Println(err)
 			continue
 		}
+		proc.Status = process.Running
 
 		for int(proc.RemainingTime) > 0 {
 			proc.RemainingTime -= 1

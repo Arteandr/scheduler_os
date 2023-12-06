@@ -30,7 +30,7 @@ func (cmd *ProcessListCommand) Execute(args []string) {
 			return "Выполнение"
 		case process.Completed:
 			return "Выполнен"
-		case process.Readiness:
+		case process.Waiting:
 			return "Готовность"
 		default:
 			return ""

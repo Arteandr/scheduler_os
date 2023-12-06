@@ -1,13 +1,18 @@
 package scheduler
 
+const (
+	FirstQueueQuantum  = 8
+	SecondQueueQuantum = FirstQueueQuantum * 2
+)
+
 type MultilevelQueue struct {
 	queues []ISchedulerQueue
 }
 
-func NewMultilevelQueue() *MultilevelQueue {
+func NewMultilevelQueue(s *Scheduler) *MultilevelQueue {
 	mq := &MultilevelQueue{}
-	mq.queues = append(mq.queues, NewRRQueue())
-	mq.queues = append(mq.queues, NewRRQueue())
+	mq.queues = append(mq.queues, NewRRQueue(&s.Quantum, FirstQueueQuantum))
+	mq.queues = append(mq.queues, NewRRQueue(&s.Quantum, SecondQueueQuantum))
 	mq.queues = append(mq.queues, NewFCRSQueue())
 
 	return mq

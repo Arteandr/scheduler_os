@@ -1,6 +1,7 @@
 package process
 
 import (
+	"github.com/fatih/color"
 	"math/rand"
 )
 
@@ -12,8 +13,8 @@ const (
 type Status = uint8
 
 const (
-	Running   Status = iota // Выполнение
-	Readiness               // Готовность
+	Waiting   Status = iota // Готовность
+	Running                 // Выполнение
 	Completed               // Выполнена
 )
 
@@ -33,16 +34,22 @@ func GenerateProcess(id, maxBurst int) *Process {
 		UID:      uint32(rand.Intn(10)),
 		Burst:    uint32(rand.Intn(maxBurst)) + 1,
 		Priority: uint32(MinPriority),
-		Status:   Readiness,
+		Status:   Waiting,
 	}
 	p.RemainingTime = p.Burst
 
 	return p
 }
 
-func (proc *Process) IncreasePriority() {
-	proc.Priority += 1
-	if proc.Priority > MaxPriority {
-		proc.Priority = MinPriority
+func (proc *Process) StringStatus() string {
+	cyan := color.New(color.FgHiCyan).SprintfFunc()
+	yellow := color.New(color.FgHiYellow).SprintlnFunc()
+	red := color.New(color.FgHiRed).SprintlnFunc()
+	if proc.Status == Waiting {
+		return yellow("W")
+	} else if proc.Status == Running {
+		return red("R")
+	} else {
+		return cyan("F")
 	}
 }
