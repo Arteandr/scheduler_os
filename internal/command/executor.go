@@ -13,9 +13,12 @@ func NewCommandExecutor(scheduler *scheduler.Scheduler) *Executor {
 		Scheduler: scheduler,
 	}
 
-	cmdExecutor.CMDs["run"] = NewRunCommand()
+	cmdExecutor.CMDs["run"] = NewRunCommand(scheduler)
 	cmdExecutor.CMDs["clear"] = NewClearCommand()
+	cmdExecutor.CMDs["exit"] = NewExitCommand()
 	cmdExecutor.CMDs["quantum"] = NewQuantumCommand(scheduler)
+	cmdExecutor.CMDs["burst"] = NewBurstCommand(scheduler)
+	cmdExecutor.CMDs["ps"] = NewProcessListCommand(scheduler)
 
 	return cmdExecutor
 }

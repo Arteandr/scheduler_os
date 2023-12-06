@@ -23,14 +23,14 @@ func (cmd *QuantumCommand) Execute(args []string) {
 		fmt.Println(cmd.ErrorMessage)
 		return
 	}
-	var quantum uint64
+	var quantum int
 	var err error
-	quantum, err = strconv.ParseUint(args[0], 10, 8)
-	if err != nil || quantum < 1 {
+	quantum, err = strconv.Atoi(args[0])
+	if err != nil || quantum < 1 || quantum > 250 {
 		fmt.Println(cmd.ErrorMessage)
 		return
 	}
 
-	cmd.Scheduler.SetQuantum(uint8(quantum))
+	cmd.Scheduler.SetQuantum(quantum)
 	fmt.Println("Значение кванта времени успешно установлено")
 }

@@ -1,11 +1,22 @@
 package command
 
+import "kurs_scheduler/internal/scheduler"
+
 type RunCommand struct {
+	Scheduler *scheduler.Scheduler
 }
 
-func NewRunCommand() *RunCommand {
-	return &RunCommand{}
+func NewRunCommand(scheduler *scheduler.Scheduler) *RunCommand {
+	return &RunCommand{
+		Scheduler: scheduler,
+	}
 }
 
-func (c *RunCommand) Execute(args []string) {
+func (cmd *RunCommand) Execute(args []string) {
+	if len(cmd.Scheduler.Processes) < 1 {
+		return
+	}
+	NewClearCommand().Execute(args)
+
+	cmd.Scheduler.Run()
 }

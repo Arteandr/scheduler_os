@@ -1,6 +1,8 @@
 package process
 
-import "math/rand"
+import (
+	"math/rand"
+)
 
 type Status = uint8
 
