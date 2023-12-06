@@ -6,6 +6,7 @@ import (
 	"github.com/fatih/color"
 	"github.com/jedib0t/go-pretty/v6/table"
 	"kurs_scheduler/internal/process"
+	"kurs_scheduler/pkg/utils"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -14,19 +15,59 @@ import (
 )
 
 type Scheduler struct {
-	Quantum     int
-	MaxBurst    int
-	Processes   []*process.Process
-	CurrentTick int
+	Quantum         int
+	MaxBurst        int
+	Processes       []*process.Process
+	ProcessHistory  [][]process.Process
+	CurrentTick     int
+	MultilevelQueue *MultilevelQueue
 }
 
 func NewScheduler() *Scheduler {
-	return &Scheduler{
-		CurrentTick: 0,
+	sched := &Scheduler{
+		CurrentTick:     0,
+		MultilevelQueue: NewMultilevelQueue(),
 	}
+
+	return sched
 }
 
 func (s *Scheduler) Run() {
+	s.SetMaxBurst(10)
+	s.GenerateProcesses(10)
+	if len(s.Processes) < 1 {
+		return
+	}
+
+	for _, p := range s.Processes {
+		s.MultilevelQueue.queues[2].Enqueue(p)
+	}
+
+	for s.MultilevelQueue.TotalSize() > 0 {
+		for _, queue := range s.MultilevelQueue.queues {
+			if queue.Size() < 1 {
+				continue
+			}
+
+			onTickCallback := func(s *Scheduler) func() {
+				return func() {
+					s.SaveHistory()
+				}
+			}(s)
+
+			queue.Run(onTickCallback)
+		}
+	}
+
+	s.drawTable(s.ProcessHistory[0])
+	s.drawHotkeys()
+}
+
+func (s *Scheduler) SaveHistory() {
+	s.ProcessHistory = append(s.ProcessHistory, utils.PtrToSlice(&s.Processes))
+}
+
+func (s *Scheduler) Draw() {
 	if err := keyboard.Open(); err != nil {
 		fmt.Println("Невозможно запустить визуализацию")
 		return
@@ -63,7 +104,7 @@ func (s *Scheduler) draw() {
 	clear.Stdout = os.Stdout
 	clear.Run()
 
-	s.drawTable()
+	s.drawTable(utils.PtrToSlice(&s.Processes))
 	s.drawHotkeys()
 }
 
@@ -76,34 +117,43 @@ func (s *Scheduler) getTotalBurst() int {
 	return sum
 }
 
-func (s *Scheduler) drawTable() {
+func (s *Scheduler) drawTable(processes []process.Process) {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
 	t.SetStyle(table.StyleLight)
+	t.SetColumnConfigs([]table.ColumnConfig{
+		{
+			WidthMin: 50,
+		},
+	})
 	t.AppendHeader(s.generateHeader())
-
 	t.Style().Options.SeparateRows = true
-
-	t.AppendRows(s.generateRows())
+	t.AppendRows(s.generateRows(processes))
 	t.AppendSeparator()
 	t.Render()
 }
 
 func (s *Scheduler) generateHeader() table.Row {
 	green := color.New(color.FgGreen).SprintfFunc()
-	headerRow := table.Row{green("PID")}
+	headerRow := table.Row{green("#")}
 	for i := 1; i <= s.getTotalBurst(); i++ {
-		headerRow = append(headerRow, strconv.Itoa(i))
+		headerRow = append(headerRow, green(strconv.Itoa(i)))
 	}
 
 	return headerRow
 }
 
-func (s *Scheduler) generateRows() []table.Row {
+func (s *Scheduler) generateRows(processes []process.Process) []table.Row {
+	green := color.New(color.FgGreen).SprintfFunc()
 	t := make([]table.Row, len(s.Processes))
-	for i, proc := range s.Processes {
-		info := fmt.Sprintf("PID: %d UID: %d Burst: %d\n"+
-			"Приоритет: %d Статус: %d", proc.ID, proc.UID, proc.Burst, proc.Status, proc.Priority)
+	for i, proc := range processes {
+		info := fmt.Sprintf("%s UID: %d Remaining: %d\n"+
+			"Приоритет: %d Статус: %d",
+			green(fmt.Sprintf("%s: %s", "PID", color.New(color.Bold).SprintFunc()(proc.ID))),
+			proc.UID,
+			proc.RemainingTime,
+			proc.Status,
+			proc.Priority)
 		t[i] = table.Row{info}
 	}
 

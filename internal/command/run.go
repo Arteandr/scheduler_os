@@ -13,9 +13,6 @@ func NewRunCommand(scheduler *scheduler.Scheduler) *RunCommand {
 }
 
 func (cmd *RunCommand) Execute(args []string) {
-	if len(cmd.Scheduler.Processes) < 1 {
-		return
-	}
 	NewClearCommand().Execute(args)
 
 	cmd.Scheduler.Run()

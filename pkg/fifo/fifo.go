@@ -4,19 +4,19 @@ import (
 	"errors"
 )
 
-type Queue struct {
-	items []interface{}
+type Queue[T any] struct {
+	items []*T
 }
 
-func NewFIFOQueue() *Queue {
-	return &Queue{items: []interface{}{}}
+func NewFIFOQueue[T comparable]() *Queue[T] {
+	return &Queue[T]{items: []*T{}}
 }
 
-func (q *Queue) Enqueue(item interface{}) {
+func (q *Queue[T]) Enqueue(item *T) {
 	q.items = append(q.items, item)
 }
 
-func (q *Queue) Dequeue() (interface{}, error) {
+func (q *Queue[T]) Dequeue() (*T, error) {
 	if len(q.items) == 0 {
 		return nil, errors.New("очередь пустая")
 	}
@@ -25,13 +25,13 @@ func (q *Queue) Dequeue() (interface{}, error) {
 	return item, nil
 }
 
-func (q *Queue) Front() (interface{}, error) {
+func (q *Queue[T]) Front() (*T, error) {
 	if len(q.items) == 0 {
 		return nil, errors.New("очередь пустая")
 	}
 	return q.items[0], nil
 }
 
-func (q *Queue) Size() int {
+func (q *Queue[T]) Size() int {
 	return len(q.items)
 }

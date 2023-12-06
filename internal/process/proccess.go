@@ -4,12 +4,17 @@ import (
 	"math/rand"
 )
 
+const (
+	MinPriority = 0
+	MaxPriority = 2
+)
+
 type Status = uint8
 
 const (
 	Running   Status = iota // Выполнение
 	Readiness               // Готовность
-	Waiting                 // Ожидание
+	Completed               // Выполнена
 )
 
 type Process struct {
@@ -23,10 +28,21 @@ type Process struct {
 }
 
 func GenerateProcess(id, maxBurst int) *Process {
-	return &Process{
-		ID:     uint32(id),
-		UID:    uint32(rand.Intn(10)),
-		Burst:  uint32(rand.Intn(maxBurst)),
-		Status: Readiness,
+	p := &Process{
+		ID:       uint32(id),
+		UID:      uint32(rand.Intn(10)),
+		Burst:    uint32(rand.Intn(maxBurst)) + 1,
+		Priority: uint32(MinPriority),
+		Status:   Readiness,
+	}
+	p.RemainingTime = p.Burst
+
+	return p
+}
+
+func (proc *Process) IncreasePriority() {
+	proc.Priority += 1
+	if proc.Priority > MaxPriority {
+		proc.Priority = MinPriority
 	}
 }

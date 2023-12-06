@@ -18,8 +18,6 @@ func NewProcessListCommand(scheduler *scheduler.Scheduler) *ProcessListCommand {
 }
 
 func (cmd *ProcessListCommand) Execute(args []string) {
-	cmd.Scheduler.SetMaxBurst(10)
-	cmd.Scheduler.GenerateProcesses(10)
 	processes := cmd.Scheduler.GetAllProcesses()
 	if len(processes) < 1 {
 		fmt.Println("Процессы не сгенерированы")
@@ -30,8 +28,8 @@ func (cmd *ProcessListCommand) Execute(args []string) {
 		switch status {
 		case process.Running:
 			return "Выполнение"
-		case process.Waiting:
-			return "Ожидание"
+		case process.Completed:
+			return "Выполнен"
 		case process.Readiness:
 			return "Готовность"
 		default:
