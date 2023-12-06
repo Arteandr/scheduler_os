@@ -13,9 +13,9 @@ const (
 type Status = uint8
 
 const (
-	Waiting   Status = iota // Готовность
+	Waiting   Status = iota // Ожидание
 	Running                 // Выполнение
-	Completed               // Выполнена
+	Completed               // Выполнен
 )
 
 type Process struct {
@@ -43,13 +43,26 @@ func GenerateProcess(id, maxBurst int) *Process {
 
 func (proc *Process) StringStatus() string {
 	cyan := color.New(color.FgHiCyan).SprintfFunc()
-	yellow := color.New(color.FgHiYellow).SprintlnFunc()
-	red := color.New(color.FgHiRed).SprintlnFunc()
+	red := color.New(color.FgHiRed).SprintfFunc()
+	green := color.New(color.FgHiGreen).SprintfFunc()
 	if proc.Status == Waiting {
-		return yellow("W")
+		return cyan("W")
 	} else if proc.Status == Running {
 		return red("R")
 	} else {
-		return cyan("F")
+		return green("F")
+	}
+}
+
+func (proc *Process) LongStringStatus() string {
+	cyan := color.New(color.FgHiCyan).SprintfFunc()
+	red := color.New(color.FgHiRed).SprintfFunc()
+	green := color.New(color.FgHiGreen).SprintfFunc()
+	if proc.Status == Waiting {
+		return cyan("ожидание")
+	} else if proc.Status == Running {
+		return red("выполнение")
+	} else {
+		return green("выполнен")
 	}
 }

@@ -1,9 +1,6 @@
 package command
 
-import (
-	"os"
-	"os/exec"
-)
+import "kurs_scheduler/pkg/utils"
 
 type ClearCommand struct {
 }
@@ -13,7 +10,5 @@ func NewClearCommand() *ClearCommand {
 }
 
 func (c *ClearCommand) Execute(args []string) {
-	cmd := exec.Command("cmd", "/c", "cls")
-	cmd.Stdout = os.Stdout
-	cmd.Run()
+	utils.ClearScreen()
 }

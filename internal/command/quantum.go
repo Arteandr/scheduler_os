@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"kurs_scheduler/internal/scheduler"
+	"kurs_scheduler/pkg/utils"
 	"strconv"
 )
 
@@ -20,14 +21,14 @@ func NewQuantumCommand(scheduler *scheduler.Scheduler) *QuantumCommand {
 
 func (cmd *QuantumCommand) Execute(args []string) {
 	if len(args) != 1 {
-		fmt.Println(cmd.ErrorMessage)
+		utils.Error(cmd.ErrorMessage)
 		return
 	}
 	var quantum int
 	var err error
 	quantum, err = strconv.Atoi(args[0])
 	if err != nil || quantum < 1 || quantum > 250 {
-		fmt.Println(cmd.ErrorMessage)
+		utils.Error(cmd.ErrorMessage)
 		return
 	}
 

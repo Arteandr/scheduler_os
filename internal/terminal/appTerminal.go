@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"kurs_scheduler/internal/command"
+	"kurs_scheduler/pkg/utils"
 	"os"
 	"strings"
 )
@@ -38,7 +39,7 @@ func (t *AppTerminal) GetLine() string {
 	fmt.Print("scheduler> ")
 	text, err := reader.ReadString('\n')
 	if err != nil {
-		fmt.Println("Ошибка ввода")
+		utils.Error("Ошибка ввода")
 		return ""
 	}
 

@@ -8,9 +8,7 @@ import (
 	"kurs_scheduler/internal/process"
 	"kurs_scheduler/pkg/utils"
 	"os"
-	"os/exec"
 	"os/signal"
-	"runtime"
 	"strconv"
 	"syscall"
 )
@@ -33,9 +31,16 @@ func NewScheduler() *Scheduler {
 	return sched
 }
 
-func (s *Scheduler) Run() {
-	s.SetMaxBurst(10)
-	s.GenerateProcesses(10)
+func (s *Scheduler) ClearState() {
+	s.Processes = nil
+	s.ProcessHistory = nil
+	s.CurrentTick = 0
+	s.MultilevelQueue = NewMultilevelQueue(s)
+}
+
+func (s *Scheduler) Run(count int) {
+	s.ClearState()
+	s.GenerateProcesses(count)
 	if len(s.Processes) < 1 {
 		return
 	}
@@ -105,27 +110,22 @@ main:
 				s.CurrentTick -= 1
 			}
 			break
+		case char == 'e':
+			s.CurrentTick = len(s.ProcessHistory) - 1
+		case char == 's':
+			s.CurrentTick = 0
 		default:
 			continue
 		}
 	}
+	utils.ClearScreen()
 }
 
 func (s *Scheduler) draw() {
-	switch runtime.GOOS {
-	case "windows":
-		clear := exec.Command("cmd", "/c", "cls")
-		clear.Stdout = os.Stdout
-		clear.Run()
-		break
-	case "linux":
-		clear := exec.Command("clear")
-		clear.Stdout = os.Stdout
-		clear.Run()
-		break
-	}
+	utils.ClearScreen()
 
 	s.drawTable()
+	s.drawLegend()
 	s.drawHotkeys()
 }
 
@@ -138,10 +138,18 @@ func (s *Scheduler) getTotalBurst() int {
 	return sum
 }
 
+func (s *Scheduler) drawLegend() {
+	cyan := color.New(color.FgHiCyan).SprintfFunc()
+	red := color.New(color.FgHiRed).SprintfFunc()
+	green := color.New(color.FgHiGreen).SprintfFunc()
+	fmt.Printf("\n\t%s - ожидание\t%s - выполнение\t%s - завершен\n",
+		cyan("W"), red("R"), green("F"))
+}
+
 func (s *Scheduler) drawTable() {
 	t := table.NewWriter()
 	t.SetOutputMirror(os.Stdout)
-	t.SetStyle(table.StyleLight)
+	t.SetStyle(table.StyleRounded)
 	t.Style().Options.SeparateRows = true
 	t.AppendHeader(s.generateHeader())
 	t.AppendRows(s.generateRows())
@@ -151,7 +159,7 @@ func (s *Scheduler) drawTable() {
 
 func (s *Scheduler) generateHeader() table.Row {
 	green := color.New(color.FgGreen).SprintfFunc()
-	headerRow := table.Row{green(strconv.Itoa(s.CurrentTick))}
+	headerRow := table.Row{"Квант = " + green(strconv.Itoa(s.Quantum))}
 	for i := 1; i <= s.getTotalBurst()+1; i++ {
 		headerRow = append(headerRow, green(strconv.Itoa(i)))
 	}
@@ -164,13 +172,13 @@ func (s *Scheduler) generateRows() []table.Row {
 	t := make([]table.Row, len(s.Processes))
 	for i, proc := range s.ProcessHistory[s.CurrentTick] {
 		info := fmt.Sprintf("%s\nUID: %d\nCPU Burst: %d Ост.время: %d\n"+
-			"Приоритет: %d Статус: %d",
+			"Приоритет: %d Статус: %s",
 			green(fmt.Sprintf("%s: %s", "PID", color.New(color.Bold).SprintFunc()(proc.ID))),
 			proc.UID,
 			proc.Burst,
 			proc.RemainingTime,
 			proc.Priority,
-			proc.Status,
+			proc.LongStringStatus(),
 		)
 		t[i] = table.Row{info}
 		for j := 0; j <= s.CurrentTick; j++ {
@@ -184,27 +192,18 @@ func (s *Scheduler) generateRows() []table.Row {
 func (s *Scheduler) drawHotkeys() {
 	red := color.New(color.FgRed).SprintfFunc()
 	green := color.New(color.FgGreen).SprintfFunc()
-	fmt.Printf("\n%s Выход\t%s Предыдущий тик\t%s Следующий тик\n",
+	magenta := color.New(color.FgMagenta).SprintfFunc()
+	fmt.Printf("\n\t%s Выход\t"+
+		"%s Предыдущий тик\t"+
+		"%s Следующий тик\t"+
+		"%s Первый тик\t"+
+		"%s Последний тик\n",
 		red("(q)"),
 		green("(p)"),
-		green("(n)"))
+		green("(n)"),
+		magenta("(s)"),
+		magenta("(e)"))
 
-}
-
-func (s *Scheduler) NextTick() {
-	if len(s.Processes) < 1 {
-		return
-	}
-
-	s.CurrentTick += 1
-}
-
-func (s *Scheduler) PrevTick() {
-	if s.CurrentTick == 1 || len(s.Processes) < 1 {
-		return
-	}
-
-	s.CurrentTick -= 1
 }
 
 func (s *Scheduler) SetQuantum(quantum int) {

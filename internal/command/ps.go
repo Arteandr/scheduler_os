@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"kurs_scheduler/internal/process"
 	"kurs_scheduler/internal/scheduler"
+	"kurs_scheduler/pkg/utils"
 )
 
 type ProcessListCommand struct {
@@ -20,7 +21,7 @@ func NewProcessListCommand(scheduler *scheduler.Scheduler) *ProcessListCommand {
 func (cmd *ProcessListCommand) Execute(args []string) {
 	processes := cmd.Scheduler.GetAllProcesses()
 	if len(processes) < 1 {
-		fmt.Println("Процессы не сгенерированы")
+		utils.Error("Процессы не сгенерированы")
 		return
 	}
 

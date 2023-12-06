@@ -3,6 +3,7 @@ package command
 import (
 	"fmt"
 	"kurs_scheduler/internal/scheduler"
+	"kurs_scheduler/pkg/utils"
 	"strconv"
 )
 
@@ -27,7 +28,7 @@ func (cmd *BurstCommand) Execute(args []string) {
 	var err error
 	burst, err = strconv.Atoi(args[0])
 	if err != nil || burst < 1 || burst > 250 {
-		fmt.Println(cmd.ErrorMessage)
+		utils.Error(cmd.ErrorMessage)
 		return
 	}
 

@@ -5,9 +5,11 @@ import (
 	"kurs_scheduler/internal/command"
 	"kurs_scheduler/internal/scheduler"
 	"kurs_scheduler/internal/terminal"
+	"kurs_scheduler/pkg/utils"
 )
 
 func main() {
+	utils.ClearScreen()
 	// Канал для чтения cmd с терминала
 	cmd := make(chan *command.Args)
 	// Канал для ожидания выполнения CMD
