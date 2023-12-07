@@ -142,7 +142,7 @@ func (s *Scheduler) drawLegend() {
 	cyan := color.New(color.FgHiCyan).SprintfFunc()
 	red := color.New(color.FgHiRed).SprintfFunc()
 	green := color.New(color.FgHiGreen).SprintfFunc()
-	fmt.Printf("\n\t%s - ожидание\t%s - выполнение\t%s - завершен\n",
+	fmt.Printf("\n\t%s - готовность\t%s - выполнение\t%s - завершен\n",
 		cyan("W"), red("R"), green("F"))
 }
 

@@ -27,7 +27,7 @@ func (cmd *QuantumCommand) Execute(args []string) {
 	var quantum int
 	var err error
 	quantum, err = strconv.Atoi(args[0])
-	if err != nil || quantum < 1 || quantum > 250 {
+	if err != nil || quantum < 1 || quantum > 8 {
 		utils.Error(cmd.ErrorMessage)
 		return
 	}

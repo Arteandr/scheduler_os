@@ -59,7 +59,7 @@ func (proc *Process) LongStringStatus() string {
 	red := color.New(color.FgHiRed).SprintfFunc()
 	green := color.New(color.FgHiGreen).SprintfFunc()
 	if proc.Status == Waiting {
-		return cyan("ожидание")
+		return cyan("готовность")
 	} else if proc.Status == Running {
 		return red("выполнение")
 	} else {
